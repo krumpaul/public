@@ -190,7 +190,7 @@ function scanWorkRequests(mon, rs, chest)
     items = rs.listItems()
     item_array = {}
     for index, item in ipairs(items) do
-         if not item.nbt.tag and item.name != "minecraft:fishing_rod" then
+         if not ( item.nbt.tag and item.name != "minecraft:fishing_rod" ) then
              item_array[item.name] = item.amount
          end
      end
@@ -265,7 +265,7 @@ function scanWorkRequests(mon, rs, chest)
 
             color = colors.green
             if provided < needed then
-                if rs.isItemCraftable({name=string.lower(item)}) and rs.isItemCrafting({name=string.lower(item)}) then
+                if ( rs.isItemCraftable({name=string.lower(item)}) and rs.isItemCrafting({name=string.lower(item)}) ) then
                     color = colors.yellow
                     print("[Crafting]", item)
                 else
