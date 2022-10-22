@@ -256,7 +256,9 @@ function scanWorkRequests(mon, rs, chest)
         color = colors.blue
         if useRS == 1 then
             if item_array[item] then
+				print("exporting:", string.lower(item))
                 provided = rs.exportItem({name=string.lower(item), count=needed}, chest)
+				print(provided)
             end
 
             color = colors.green
@@ -265,7 +267,7 @@ function scanWorkRequests(mon, rs, chest)
                     color = colors.yellow
                     print("[Crafting]", item)
                 else
-                    if rs.craftItem({name=item, count=needed}) then
+                    if rs.craftItem({name=string.lower(item), count=needed}) then
                         color = colors.yellow
                         print("[Scheduled]", needed, "x", item)
                     else
