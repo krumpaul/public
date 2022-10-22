@@ -256,7 +256,7 @@ function scanWorkRequests(mon, rs, chest)
         if name == "Stack List" then useRS = 0 end
 
         color = colors.blue
-        if useRS == 1 then
+        if useRS == 0 then
             if item_array[string.lower(item)] then
 				print("exporting:", string.lower(item))
                 provided = rs.exportItem({name=string.lower(item), count=needed}, chest)
@@ -265,7 +265,8 @@ function scanWorkRequests(mon, rs, chest)
 
             color = colors.green
             if provided < needed then
-                if rs.isItemCrafting({name=string.lower(item)}) then
+                if rs.isItemCraftable({name=string.lower(item)}) then
+					rs.isItemCrafting({name=string.lower(item)})
                     color = colors.yellow
                     print("[Crafting]", item)
                 else
