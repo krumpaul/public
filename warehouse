@@ -190,10 +190,12 @@ function scanWorkRequests(mon, rs, chest)
     items = rs.listItems()
     item_array = {}
     for index, item in ipairs(items) do
-        if not item.nbt then
-            item_array[item.name] = item.amount
-        end
-    end
+         if not item.nbt.tag then
+             item_array[item.name] = item.amount
+         end
+     end
+	
+
 
     -- Scan the Warehouse for all open work requests. For each item, try to
     -- provide as much as possible from RS, then craft whatever is needed
