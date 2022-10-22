@@ -255,7 +255,7 @@ function scanWorkRequests(mon, rs, chest)
 
         color = colors.blue
         if useRS == 1 then
-            if item_array[item] then
+            if item_array[string.lower(item)] then
 				print("exporting:", string.lower(item))
                 provided = rs.exportItem({name=string.lower(item), count=needed}, chest)
 				print(provided)
