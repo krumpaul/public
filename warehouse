@@ -256,11 +256,10 @@ function scanWorkRequests(mon, rs, chest)
         if name == "Stack List" then useRS = 0 end
 
         color = colors.blue
-        if useRS == 0 then
+        if useRS == 1 then
             if item_array[string.lower(item)] then
 				print("exporting:", string.lower(item))
                 provided = rs.exportItem({name=string.lower(item), count=needed}, chest)
-				print(provided)
             end
 
             color = colors.green
