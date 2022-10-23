@@ -1,17 +1,27 @@
 -- Config
-
+local monitor = peripheral.wrap("top")
+monitor.clear()
+monitor.setTextScale(0.5)
+monitor.setCursorPos(1, 1)
+monitor.setCursorBlink(false)
+redstone.setOutput("bottom", true)
+term.redirect(peripheral.wrap("top"))
 local maxUsedSlotsPerCell = 55
 local paddingPercent = 100
 
 local systemDriveNames = {
-  "ae2:drive_9",
-  "ae2:drive_10",
+  "ae2:drive_11",
+  "ae2:drive_12",
+  "ae2:drive_13",
+  "ae2:drive_14",
 }
 local workspaceNames = {
   ioPort = "ae2:io_port_1",
   interface = "meBridge_2",
-  chest = "ae2:chest_1",
+  chest = "ae2:chest_2",
   drives = {
+    "ae2:drive_15",
+    "ae2:drive_16",
     "ae2:drive_6",
     "ae2:drive_5",
   }
@@ -253,6 +263,9 @@ function Stack:exportAllToWorkspaceChest()
   local amountExported = 0
   while amountExported < amountToExport do
     amountExported = amountExported + workspace.interface.exportItemToPeripheral(self.ccStack, workspaceNames.chest)
+    if unexpected_condition then
+        error()
+    end
   end
 end
 
@@ -261,9 +274,11 @@ end
 -- Main
 
 print("Scanning for cells...")
+--monitor.write("Scanning for cells...")
 Cell.loadAll()
 
 print("Moving cells to workspace...")
+--monitor.write("Moving cells to workspace...")
 local function moveDrivesFromSystemToWorkspace()
   for driveNum, systemDrive in ipairs(systemDrives) do
     local systemCells = systemDrive.list()
@@ -276,9 +291,11 @@ end
 moveDrivesFromSystemToWorkspace()
 
 print("Scanning for stacks...")
+--monitor.write("Scanning for stacks...")
 Stack.loadAll()
 
 print("Planning...")
+--monitor.write("Planning...")
 table.sort(stacks, Stack.sortByCountDesc)
 for _, stack in ipairs(stacks) do
   stack:addToCellWithLargestUnusuedSpace()
@@ -286,26 +303,36 @@ end
 
 if #additionallyRequiredCells > 0 then
   print("Needed cells:")
+  --monitor.write("Needed cells:")
   local requiredCellsByCapacity = groupBy(additionallyRequiredCells, 'capacity')
   for _, capacity in ipairs(Cell.capacities) do
     if requiredCellsByCapacity[capacity] ~= nil and #requiredCellsByCapacity[capacity] > 0 then
       print("  "..#requiredCellsByCapacity[capacity].." "..(capacity/1024).."k cells")
+      --monitor.write("  "..#requiredCellsByCapacity[capacity].." "..(capacity/1024).."k cells")
     end
   end
   error("Add the above cells to continue")
 end
 
 print("Executing plan...")
-
+--monitor.write("Executing plan...")
 table.sort(cells, Cell.sortByCapacity)
 
 for _, cell in ipairs(cells) do
   print("clearing and putting in workspace...")
+  --monitor.write("clearing and putting in workspace...")
   cell:clearAndPutInWorkspaceChest()
   print("moving stacks to chest...")
+  --monitor.write("moving stacks to chest...")
   for _, stack in ipairs(cell.inventory) do
-    stack:exportAllToWorkspaceChest()
+      if pcall(stack.exportAllToWorkspaceChest, stack) then
+          print(" ")
+      else
+          print("failed on stack:"..stack.displayName.."skipping")
+      end    
   end
   print("moving cell back to system...")
+  --monitor.write("moving cell back to system...")
   cell:moveBackToSystem()
 end
+redstone.setOutput("bottom", false)
