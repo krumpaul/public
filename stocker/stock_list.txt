@@ -1,0 +1,37 @@
+{
+	{
+		displayName = "Printed Silicon",
+		itemId = "appliedenergistics2:item.ItemMultiMaterial",
+		variant = 20,
+		minQuantity = 5,
+		batchSize = 1,
+	},
+	{
+		displayName = "Logic Processor",
+		itemId = "appliedenergistics2:item.ItemMultiMaterial",
+		variant = 22,
+		minQuantity = 5,
+		batchSize = 1,
+	},
+	{
+		displayName = "Calculation Processor",
+		itemId = "appliedenergistics2:item.ItemMultiMaterial",
+		variant = 23,
+		minQuantity = 5,
+		batchSize = 1,
+	},
+	{
+		displayName = "Engineering Processor",
+		itemId = "appliedenergistics2:item.ItemMultiMaterial",
+		variant = 24,
+		minQuantity = 5,
+		batchSize = 1,
+	},
+	{
+		displayName = "Sugar",
+		itemId = "minecraft:sugar",
+		variant = 0,
+		minQuantity = 20,
+		batchSize = 5,
+	},
+}
