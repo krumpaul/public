@@ -60,7 +60,7 @@ function main(args)
 		monitor.clear()
 		monitor.setCursorPos(1, 1)
 		monitor.setCursorBlink(false)
-		term.redirect(monitor)
+		-- term.redirect(monitor)
 		print("Monitor initialized.")
 	end
 	-- Initialize RS Bridge
@@ -68,7 +68,7 @@ function main(args)
 	if not ae2 then error("ME Bridge not found.") end
 	print("ME Bridge initialized.")
 	-- load stocks
-	local stocks = loadStockFile(stockFileName)
+	local stocks = loadStockFile(monitor, stockFileName)
 	displayStockingInfo(monitor, stocks)
 	-- enableAutoRestart()
 
@@ -81,10 +81,29 @@ function main(args)
 		-- 		stockItem(allItems[i], stocks, ae2)
 		-- 	end
 		craftitems(monitor, stocks, ae2 )
+		
 		os.sleep(checkFrequency)
 	ende
 	-- end
 end
+
+function mPrintRowJustified(mon, y, pos, text, ...)
+    w, h = mon.getSize()
+    fg = mon.getTextColor()
+    bg = mon.getBackgroundColor()
+
+    if pos == "left" then x = 1 end
+    if pos == "center" then x = math.floor((w - #text) / 2) end
+    if pos == "right" then x = w - #text end
+
+    if #arg > 0 then mon.setTextColor(arg[1]) end
+    if #arg > 1 then mon.setBackgroundColor(arg[2]) end
+    mon.setCursorPos(x, y)
+    mon.write(text)
+    mon.setTextColor(fg)
+    mon.setBackgroundColor(bg)
+end
+
 
 function processArgs(args)
 	if (#args >= 1) then
@@ -96,8 +115,6 @@ function processArgs(args)
 		assert(type(args[2]) == "string", "The second parameter (attachSide) must be a string.")
 		attachSide = args[2]:lower()
 	end
-	-- assert(isValidSide(attachSide),	"The attachSide parameter must be a valid side: left, right, front, back, top, bottom")
-
 	if (#args > 2) then
 		assert(type(args[3]) == "string", "The third parameter (stockFileName) must be a string.")
 		stockFileName = args[3]
@@ -105,19 +122,18 @@ function processArgs(args)
 	assert(fs.exists(stockFileName), "The stock file does not exist: " .. stockFileName)
 end
 
--- function attachToAe2(attachSide)
--- 	-- Make sure the attached device is actually an ME Interface.
--- 	assert(peripheral.getType(attachSide) == "tileinterface", "The computer must be attached to a full block " ..
--- 		"ME Inteface on the specified side.")
--- 	return peripheral.wrap(attachSide)
--- end
 
-function loadStockFile(stockFileName)
+function loadStockFile(mon, stockFileName)
 	local stockFile = fs.open(stockFileName, "r")
 	local stockFileContents = stockFile.readAll();
 	stockFile.close();
 	local outputStocks = textutils.unserialize(stockFileContents)
-
+	row = 3
+	for e in pairs(outputStocks) do
+		text = string.format("%d %s", outputStocks.displayName, outputStocks.minQuantity)
+		mPrintRowJustified(mon, row, "center", text, ...)
+		row = row + 1
+	end
 	if (DEBUG) then
 		print("Stock file: ")
 		print(stockFileContents)
@@ -153,13 +169,13 @@ end
 --	},
 function craftitems(mon, stocks, ae2 )
 	for i=1, #stocks do
-		print("Checking inventory for" and stocks[i].displayName)
+		print("Checking inventory for", stocks[i].displayName)
 		item = (ae2.getItem({ name = stocks[i].itemId}))
 		if item.amount < stocks[i].minQuantity then
-			print("Crafting Required for:" and stocks[i].displayName)
+			print("Crafting Required for:", stocks[i].displayName)
 			if ( ae2.isItemCraftable(item) and not ae2.isItemCrafting(item) and isCpuAvailable(ae2)  ) then
-				print(stocks[i].displayName, "sent for crafting")
-				ae2.craftItem(item, stocks[i].batchSize)
+				print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
+				ae2.craftItem({name = item.name, count = stocks[i].batchSize})
 			end
 		end
 	end
@@ -169,7 +185,7 @@ end
 function isCpuAvailable(ae2)
 	local cpus = ae2.getCraftingCPUs()
 	for i=1, #cpus do
-		if (cpus[i].busy == false) then return true end
+		if (cpus[i].isBusy == false) then return true end
 	end
 	return false
 end
