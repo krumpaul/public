@@ -69,7 +69,7 @@ function main(args)
 	print("ME Bridge initialized.")
 	-- load stocks
 	local stocks = loadStockFile(stockFileName)
-	displayStockingInfo(stocks)
+	displayStockingInfo(monitor, stocks)
 	-- enableAutoRestart()
 
 	while (true) do
@@ -97,7 +97,7 @@ function processArgs(args)
 		assert(type(args[2]) == "string", "The second parameter (attachSide) must be a string.")
 		attachSide = args[2]:lower()
 	end
-	assert(isValidSide(attachSide),	"The attachSide parameter must be a valid side: left, right, front, back, top, bottom")
+	-- assert(isValidSide(attachSide),	"The attachSide parameter must be a valid side: left, right, front, back, top, bottom")
 
 	if (#args > 2) then
 		assert(type(args[3]) == "string", "The third parameter (stockFileName) must be a string.")
@@ -136,10 +136,10 @@ function loadStockFile(stockFileName)
 	return outputStocks
 end
 
-function displayStockingInfo(stocks)
+function displayStockingInfo(mon, stocks)
 	print("Stocking info:")
 	for i=1, #stocks do
-		monitor.write(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
+		mon.write(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
 		" batchSize: " .. stocks[i].batchSize)
 		print(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
 			" batchSize: " .. stocks[i].batchSize)
@@ -155,9 +155,9 @@ end
 --	},
 function craftitems(mon, stocks, ae2 )
 	for i=1, #stocks do
-		item = (ae2.getItem({ name = stocks[i].itemId}})
+		item = (ae2.getItem({ name = stocks[i].itemId}))
 		if item.amount < stocks[i].minQuantity then
-			if ( ae2.isItemCraftable(item) AND NOT ae2.isItemCrafting(item) AND isCpuAvailable(ae2)  ) then
+			if ( ae2.isItemCraftable(item) and not ae2.isItemCrafting(item) and isCpuAvailable(ae2)  ) then
 				mon.write(stocks[i].displayName, "sent for crafting")
 				ae2.craftItem(item, stocks[i].batchSize)
 			end
