@@ -83,7 +83,7 @@ function main(args)
 		craftitems(monitor, stocks, ae2 )
 		
 		os.sleep(checkFrequency)
-	ende
+	end
 	-- end
 end
 
@@ -129,9 +129,16 @@ function loadStockFile(mon, stockFileName)
 	stockFile.close();
 	local outputStocks = textutils.unserialize(stockFileContents)
 	row = 3
+	header_shown = 0
 	for e in pairs(outputStocks) do
-		text = string.format("%d %s", outputStocks.displayName, outputStocks.minQuantity)
-		mPrintRowJustified(mon, row, "center", text, ...)
+		item = outputStocks[e]
+		if header_shown == 0 then
+			mPrintRowJustified(mon, row, "left", "Requests")
+			header_shown = 1
+			row = row + 1
+		end
+		text = string.format("%d %s", item.minQuantity, item.displayName)
+		mPrintRowJustified(mon, row, "left", text, ...)
 		row = row + 1
 	end
 	if (DEBUG) then
