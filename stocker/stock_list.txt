@@ -1,29 +1,8 @@
 {
 	{
 		displayName = "Printed Silicon",
-		itemId = "appliedenergistics2:item.ItemMultiMaterial",
+		itemId = "ae2:printed_silicon",
 		variant = 20,
-		minQuantity = 5,
-		batchSize = 1,
-	},
-	{
-		displayName = "Logic Processor",
-		itemId = "appliedenergistics2:item.ItemMultiMaterial",
-		variant = 22,
-		minQuantity = 5,
-		batchSize = 1,
-	},
-	{
-		displayName = "Calculation Processor",
-		itemId = "appliedenergistics2:item.ItemMultiMaterial",
-		variant = 23,
-		minQuantity = 5,
-		batchSize = 1,
-	},
-	{
-		displayName = "Engineering Processor",
-		itemId = "appliedenergistics2:item.ItemMultiMaterial",
-		variant = 24,
 		minQuantity = 5,
 		batchSize = 1,
 	},
