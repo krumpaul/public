@@ -82,8 +82,8 @@ function main(args)
 		-- 		stockItem(allItems[i], stocks, ae2)
 		-- 	end
 		craftitems(monitor, stocks, ae2 )
-		end
 		os.sleep(checkFrequency)
+	end
 	-- end
 end
 
@@ -155,8 +155,10 @@ end
 --	},
 function craftitems(mon, stocks, ae2 )
 	for i=1, #stocks do
+		mon.write("Checking inventory for" and stocks[i].displayName)
 		item = (ae2.getItem({ name = stocks[i].itemId}))
 		if item.amount < stocks[i].minQuantity then
+			mon.write("Crafting Required for:" and stocks[i].displayName)
 			if ( ae2.isItemCraftable(item) and not ae2.isItemCrafting(item) and isCpuAvailable(ae2)  ) then
 				mon.write(stocks[i].displayName, "sent for crafting")
 				ae2.craftItem(item, stocks[i].batchSize)
