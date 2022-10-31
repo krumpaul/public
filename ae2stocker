@@ -84,7 +84,7 @@ function main(args)
 		craftitems(monitor, stocks, ae2 )
 		end
 		os.sleep(checkFrequency)
-	end
+	-- end
 end
 
 function processArgs(args)
