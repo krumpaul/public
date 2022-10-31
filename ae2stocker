@@ -69,7 +69,7 @@ function main(args)
 	print("ME Bridge initialized.")
 	-- load stocks
 	local stocks = loadStockFile(monitor, stockFileName)
-	displayStockingInfo(monitor, stocks)
+	--displayStockingInfo(monitor, stocks)
 	-- enableAutoRestart()
 
 	while (true) do
@@ -123,7 +123,7 @@ function processArgs(args)
 end
 
 
-function loadStockFile(mon, stockFileName)
+function loadStockFile(mon, stockFileName, ...)
 	local stockFile = fs.open(stockFileName, "r")
 	local stockFileContents = stockFile.readAll();
 	stockFile.close();
@@ -133,12 +133,12 @@ function loadStockFile(mon, stockFileName)
 	for e in pairs(outputStocks) do
 		item = outputStocks[e]
 		if header_shown == 0 then
-			mPrintRowJustified(mon, row, "left", "Requests")
+			mPrintRowJustified(mon, row, "left", "REQUESTS")
 			header_shown = 1
 			row = row + 1
 		end
-		text = string.format("%d %s", item.minQuantity, item.displayName)
-		mPrintRowJustified(mon, row, "left", text, ...)
+		text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
+		mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
 		row = row + 1
 	end
 	if (DEBUG) then
@@ -157,15 +157,16 @@ function loadStockFile(mon, stockFileName)
 	return outputStocks
 end
 
-function displayStockingInfo(mon, stocks)
-	print("Stocking info:")
-	for i=1, #stocks do
-		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
-		" batchSize: " .. stocks[i].batchSize)
-		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
-			" batchSize: " .. stocks[i].batchSize)
-	end
-end
+--function displayStockingInfo(mon, stocks)
+--	print("Stocking info:")
+--	for i=1, #stocks do
+--		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
+--		" batchSize: " .. stocks[i].batchSize)
+--		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
+--			" batchSize: " .. stocks[i].batchSize)
+--	end
+--end
+
 --{
 --	{
 --		displayName = "Printed Silicon",
@@ -174,17 +175,34 @@ end
 --		minQuantity = 5,
 --		batchSize = 1,
 --	},
-function craftitems(mon, stocks, ae2 )
+function craftitems(mon, stocks, ae2, ... )
+	row = 1
+	header_shown = 0
+	if header_shown == 0 then
+		if row > 1 then row = row + 1 end
+		mPrintRowJustified(mon, row, "center", "STOCK LEVELS")
+		header_shown = 1
+		row = row + 1
+	end
+
 	for i=1, #stocks do
+		color = "colors.green"
 		print("Checking inventory for", stocks[i].displayName)
 		item = (ae2.getItem({ name = stocks[i].itemId}))
 		if item.amount < stocks[i].minQuantity then
+			color = "colors.red"
 			print("Crafting Required for:", stocks[i].displayName)
-			if ( ae2.isItemCraftable(item) and not ae2.isItemCrafting(item) and isCpuAvailable(ae2)  ) then
+			craftingstatus = ae2.isItemCrafting(item)
+			if craftingstatus then color = "colors.orange" end
+			if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(ae2)  ) then
 				print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
+				color = "colors.blue"
 				ae2.craftItem({name = item.name, count = stocks[i].batchSize})
 			end
+
 		end
+		text = string.format("%s %s %d %s %d", stocks[i].displayName, "Req:", stocks[i].minQuantity, "Stock:", item.amount) -- Stone Req: 5000 Stock: 5001
+		mPrintRowJustified(mon, row, "center", text, color)
 	end
 end
 
