@@ -186,23 +186,24 @@ function craftitems(mon, stocks, ae2, ... )
 	end
 
 	for i=1, #stocks do
-		color = "colors.green"
+		color = colors.green
 		print("Checking inventory for", stocks[i].displayName)
 		item = (ae2.getItem({ name = stocks[i].itemId}))
 		if item.amount < stocks[i].minQuantity then
-			color = "colors.red"
+			color = colors.red
 			print("Crafting Required for:", stocks[i].displayName)
 			craftingstatus = ae2.isItemCrafting(item)
-			if craftingstatus then color = "colors.orange" end
+			if craftingstatus then color = colors.orange end
 			if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(ae2)  ) then
 				print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
-				color = "colors.blue"
+				color = colors.orange
 				ae2.craftItem({name = item.name, count = stocks[i].batchSize})
 			end
 
 		end
 		text = string.format("%s %s %d %s %d", stocks[i].displayName, "Req:", stocks[i].minQuantity, "Stock:", item.amount) -- Stone Req: 5000 Stock: 5001
 		mPrintRowJustified(mon, row, "center", text, color)
+		row = row + 1
 	end
 end
 
