@@ -184,7 +184,7 @@ function craftitems(mon, stocks, ae2, ... )
 			print("Crafting Required for:", stocks[i].displayName)
 			craftingstatus = ae2.isItemCrafting(item)
 			if craftingstatus then color = colors.orange end
-			if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(ae2)  ) then
+			if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(monitor, ae2)  ) then
 				print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
 				color = colors.orange
 				ae2.craftItem({name = item.name, count = stocks[i].batchSize})
