@@ -126,7 +126,6 @@ function loadStockFile(stockFileName)
 		print("Output stocks: ")
 		for i=1, #outputStocks do
 			print("itemId: " .. outputStocks[i].itemId)
-			print("variant: " .. outputStocks[i].variant)
 			print("minQuantity: " .. outputStocks[i].minQuantity)
 			print("batchSize: " .. outputStocks[i].batchSize)
 		end
@@ -139,9 +138,9 @@ end
 function displayStockingInfo(mon, stocks)
 	print("Stocking info:")
 	for i=1, #stocks do
-		mon.write(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
+		mon.write(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
 		" batchSize: " .. stocks[i].batchSize)
-		print(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
+		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
 			" batchSize: " .. stocks[i].batchSize)
 	end
 end
