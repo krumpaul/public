@@ -65,32 +65,25 @@ function main(args)
 	end
 	-- Initialize RS Bridge
 	local ae2 = peripheral.find("meBridge")
-	if not bridge then error("ME Bridge not found.") end
+	if not ae2 then error("ME Bridge not found.") end
 	print("ME Bridge initialized.")
 	-- load stocks
 	local stocks = loadStockFile(stockFileName)
 	displayStockingInfo(stocks)
-	enableAutoRestart()
+	-- enableAutoRestart()
 
 	while (true) do
 		monitor.print("[" .. getDisplayTime() .. "] Checking inventory.")
 		print("[" .. getDisplayTime() .. "] Checking inventory.")
-		updateDelayedItems(delayedItems)
-		local allItems = getAllItems(ae2)
-		for i=1, #allItems do
-			if (allItems[i].is_craftable == true) then
-				stockItem(allItems[i], stocks, ae2)
-			end
+		-- local allItems = getAllItems(ae2)
+
+		-- for i=1, #allItems do
+		-- 	if (allItems[i].is_craftable == true) then
+		-- 		stockItem(allItems[i], stocks, ae2)
+		-- 	end
+		craftitems(monitor, stocks, ae2 )
 		end
 		os.sleep(checkFrequency)
-	end
-end
-
-function isValidSide(side)
-	if (side == "left" or side == "right" or side == "top" or side == "bottom" or side == "front" or side == "back") then
-		return true
-	else
-		return false
 	end
 end
 
@@ -113,12 +106,12 @@ function processArgs(args)
 	assert(fs.exists(stockFileName), "The stock file does not exist: " .. stockFileName)
 end
 
-function attachToAe2(attachSide)
-	-- Make sure the attached device is actually an ME Interface.
-	assert(peripheral.getType(attachSide) == "tileinterface", "The computer must be attached to a full block " ..
-		"ME Inteface on the specified side.")
-	return peripheral.wrap(attachSide)
-end
+-- function attachToAe2(attachSide)
+-- 	-- Make sure the attached device is actually an ME Interface.
+-- 	assert(peripheral.getType(attachSide) == "tileinterface", "The computer must be attached to a full block " ..
+-- 		"ME Inteface on the specified side.")
+-- 	return peripheral.wrap(attachSide)
+-- end
 
 function loadStockFile(stockFileName)
 	local stockFile = fs.open(stockFileName, "r")
@@ -146,17 +139,32 @@ end
 function displayStockingInfo(stocks)
 	print("Stocking info:")
 	for i=1, #stocks do
+		monitor.write(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
+		" batchSize: " .. stocks[i].batchSize)
 		print(" itemId: " .. stocks[i].itemId .. ":" .. stocks[i].variant .. " minQuantity: " .. stocks[i].minQuantity ..
 			" batchSize: " .. stocks[i].batchSize)
 	end
 end
-
-function getAllItems(ae2)
-	local outputAllItems = ae2.getAvailableItems()
-	assert(outputAllItems ~= nil, "No craftable items found in this AE2 network.")
-	assert(#outputAllItems > 0, "No craftable items found in this AE2 network.")
-	return outputAllItems
+--{
+--	{
+--		displayName = "Printed Silicon",
+--		itemId = "ae2:printed_silicon",
+--		variant = 20,
+--		minQuantity = 5,
+--		batchSize = 1,
+--	},
+function craftitems(mon, stocks, ae2 )
+	for i=1, #stocks do
+		item = (ae2.getItem({ name = stocks[i].itemId}})
+		if item.amount < stocks[i].minQuantity then
+			if ( ae2.isItemCraftable(item) AND NOT ae2.isItemCrafting(item) AND isCpuAvailable(ae2)  ) then
+				mon.write(stocks[i].displayName, "sent for crafting")
+				ae2.craftItem(item, stocks[i].batchSize)
+			end
+		end
+	end
 end
+
 
 function isCpuAvailable(ae2)
 	local cpus = ae2.getCraftingCPUs()
@@ -166,85 +174,8 @@ function isCpuAvailable(ae2)
 	return false
 end
 
-function findStockSetting(fingerprint, stocks)
-	for i=1, #stocks do
-		if (stocks[i].itemId == fingerprint.id and stocks[i].variant == fingerprint.dmg) then
-			return stocks[i]
-		end
-	end
-	return nil
-end
-
-function stockItem(currItem, stocks, ae2)
-	local stockSetting = findStockSetting(currItem.fingerprint, stocks)
-
-	if (stockSetting == nil or currItem.size >= stockSetting.minQuantity or isDelayed(currItem.fingerprint, delayedItems)
-	    or isCpuAvailable(ae2) == false) then return end
-
-	local neededAmount = math.ceil((stockSetting.minQuantity - currItem.size) / stockSetting.batchSize) * stockSetting.batchSize
-
-	ae2.requestCrafting(currItem.fingerprint, neededAmount)
-	delayItem(currItem.fingerprint, delayedItems)
-	print("[" .. getDisplayTime() .. "] Item " .. stockSetting.displayName ..
-		" is below its min stock level of " .. stockSetting.minQuantity .. ".  Crafting " .. neededAmount .. " more.")
-end
-
 function getDisplayTime()
 	return textutils.formatTime(os.time(), false)
-end
-
-function delayItem(fingerprint, delayedItems)
-	local fullItemName = fingerprintToFullName(fingerprint)
-	
-	if(delayedItems == nil) then
-		delayedItems = {}
-	end
-
-	for i=1, #delayedItems do
-		if (delayedItems[i].fullName == fullItemName) then
-			delayedItems[i].delay = recraftDelay
-			return
-		end
-	end
-
-	local delayedItem = {fullName = fullItemName, delay = recraftDelay}
-	delayedItems[#delayedItems+1] = delayedItem
-end
-
-function updateDelayedItems(delayedItems)
-	if (delayedItems == nil or #delayedItems < 1) then return end
-
-	local removeIndexes = {}
-	for i=1, #delayedItems do
-		currItem = delayedItems[i]
-		currItem.delay = currItem.delay - checkFrequency
-		if (currItem.delay < 0) then
-			table.insert(removeIndexes, i)
-		end
-	end
-
-	-- This should remove items from the end of the list towards the beginning
-	-- so the list being reordered won't matter.
-	for i=1, #removeIndexes do
-		table.remove(delayedItems, removeIndexes[i])
-	end
-end
-
-function fingerprintToFullName(fingerprint)
-	return fingerprint.id .. ":" .. fingerprint.dmg
-end
-
-function isDelayed(fingerprint, delayedItems)
-	if (delayedItems == nil or #delayedItems < 1) then return false end
-
-	local fullItemName = fingerprintToFullName(fingerprint)
-	for i=1, #delayedItems do
-		if (delayedItems[i].fullName == fullItemName and delayedItems[i].delay > 0) then
-			return true
-		end
-	end
-
-	return false
 end
 
 function enableAutoRestart()
