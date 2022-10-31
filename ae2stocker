@@ -1,6 +1,7 @@
 -- ********************************************************************************** --
 -- **                                                                              ** --
--- **   Minecraft AE2 Auto-Stocker by RandomBlue (E.J. Wilburn)                    ** --
+-- **   Minecraft AE2 Auto-Stocker idea by (E.J. Wilburn)                          ** --
+-- **	rewritten by krumpaul													   ** --
 -- **   ----------------------------------------------------                       ** --
 -- **                                                                              ** --
 -- **   This program automatically crafts items necessary to maintain a minimum    ** --
@@ -10,17 +11,10 @@
 -- **                                                                              ** --
 -- **   Minimum stock levels and crafting batch sizes are configurable per item.   ** --
 -- **                                                                              ** --
--- **   The computer must be placed adjacent to a full block ME Interface attached ** --
--- **   to an ME Network where both the items are stored and the crafting CPUs are ** --
--- **   located.  Each item you wish to maintain a stock level for must have       ** --
--- **   autocrafting enabled for it.                                               ** --
--- **                                                                              ** --
 -- **   Arguments                                                                  ** --
 -- **   ----------------------------------------------------                       ** --
 -- **   checkFrequency (optional) - How often inventory levels are checked in      ** --
 -- **                               seconds.                                       ** --
--- **   attachSide (optional)     - Side the computer is attached to the           ** --
--- **                               ME Interface (full block version).             ** --
 -- **   stockFileName (optional)  - Full path to the file containing stocking      ** --
 -- **                               requirements.                                  ** --
 -- **                                                                              ** --
@@ -28,9 +22,10 @@
 -- **    8th Sep 2015:  [v0.1]  Initial Release                                    ** --
 -- **    11th Sep 2015: [v0.11] Minor bug fix - attempting to crafting 0 items     ** --
 -- **                           when current quantity equals minQuantity           ** --
+-- **    10th Oct 2022 	[v0.12]	 implemented monitors, stopped tracking entire ae2 ** --
+-- **                            inventory,implemented handling 0 inv, add mincpu  ** --
+-- **							 added ae2 support								   ** --
 -- **                                                                              ** --
--- **  TODO:                                                                       ** --
--- **    1) Save command line parameters to startup script.                        ** --
 -- **                                                                              ** --
 -- ********************************************************************************** --
 
@@ -51,7 +46,6 @@ function main(args)
 		monitor.clear()
 		monitor.setCursorPos(1, 1)
 		monitor.setCursorBlink(false)
-		-- term.redirect(monitor)
 		print("Monitor initialized.")
 	end
 	-- Initialize RS Bridge
@@ -60,22 +54,12 @@ function main(args)
 	print("ME Bridge initialized.")
 	-- load stocks
 	local stocks = loadStockFile(monitor, stockFileName)
-	--displayStockingInfo(monitor, stocks)
-	-- enableAutoRestart()
-
 	while (true) do
 		print("[" .. getDisplayTime() .. "] Checking inventory.")
-		-- local allItems = getAllItems(ae2)
-
-		-- for i=1, #allItems do
-		-- 	if (allItems[i].is_craftable == true) then
-		-- 		stockItem(allItems[i], stocks, ae2)
-		-- 	end
 		craftitems(monitor, stocks, ae2 )
 		
 		os.sleep(checkFrequency)
 	end
-	-- end
 end
 
 function mPrintRowJustified(mon, y, pos, text, ...)
@@ -95,7 +79,6 @@ function mPrintRowJustified(mon, y, pos, text, ...)
     mon.setBackgroundColor(bg)
 end
 
-
 function processArgs(args)
 	if (#args >= 1) then
 		assert(type(args[1]) == "number", "The first parameter (checkFrequency) must be a number.")
@@ -108,7 +91,6 @@ function processArgs(args)
 	end
 	assert(fs.exists(stockFileName), "The stock file does not exist: " .. stockFileName)
 end
-
 
 function loadStockFile(mon, stockFileName, ...)
 	local stockFile = fs.open(stockFileName, "r")
@@ -128,40 +110,11 @@ function loadStockFile(mon, stockFileName, ...)
 		mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
 		row = row + 1
 	end
-	if (DEBUG) then
-		print("Stock file: ")
-		print(stockFileContents)
-		print("Output stocks length: " .. #outputStocks)
-		print("Output stocks: ")
-		for i=1, #outputStocks do
-			print("itemId: " .. outputStocks[i].itemId)
-			print("minQuantity: " .. outputStocks[i].minQuantity)
-			print("batchSize: " .. outputStocks[i].batchSize)
-		end
-	end
 
 	assert(#outputStocks > 0, "There are no entries in the " .. stockFileName .. " file.")
 	return outputStocks
 end
 
---function displayStockingInfo(mon, stocks)
---	print("Stocking info:")
---	for i=1, #stocks do
---		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
---		" batchSize: " .. stocks[i].batchSize)
---		print(" itemId: " .. stocks[i].itemId .. ":" .. " minQuantity: " .. stocks[i].minQuantity ..
---			" batchSize: " .. stocks[i].batchSize)
---	end
---end
-
---{
---	{
---		displayName = "Printed Silicon",
---		itemId = "ae2:printed_silicon",
---		variant = 20,
---		minQuantity = 5,
---		batchSize = 1,
---	},
 function craftitems(mon, stocks, ae2, ... )
 	row = 1
 	header_shown = 0
@@ -196,7 +149,6 @@ function craftitems(mon, stocks, ae2, ... )
 		row = row + 1
 	end
 end
-
 
 function isCpuAvailable(mon, ae2, ...)
 	local cpus = ae2.getCraftingCPUs()
