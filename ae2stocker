@@ -33,7 +33,6 @@
 local checkFrequency = 15 -- How often inventory levels are checked in seconds.  Overridden by passing as the first argument.
 local stockFileName = "stocker/stock_list.txt" -- Change this if you want the file somewhere else.  Can be
 local mincpu = 1 --Number of crafting CPU's to keep open for people.
-local DEBUG = false
 
 -- Process the input arguments - storing them to global variables
 local args = { ... }
