@@ -180,7 +180,7 @@ function craftitems(mon, stocks, ae2, ... )
 	header_shown = 0
 	if header_shown == 0 then
 		if row > 1 then row = row + 1 end
-		mPrintRowJustified(mon, row, "center", "STOCK LEVELS")
+		mPrintRowJustified(mon, row, "right", "STOCK LEVELS")
 		header_shown = 1
 		row = row + 1
 	end
@@ -189,6 +189,9 @@ function craftitems(mon, stocks, ae2, ... )
 		color = colors.green
 		print("Checking inventory for", stocks[i].displayName)
 		item = (ae2.getItem({ name = stocks[i].itemId}))
+		if (item == nil or item == '') then 
+			item = {name = stocks[i].itemId, amount = 0}
+		end
 		if item.amount < stocks[i].minQuantity then
 			color = colors.red
 			print("Crafting Required for:", stocks[i].displayName)
@@ -202,7 +205,7 @@ function craftitems(mon, stocks, ae2, ... )
 
 		end
 		text = string.format("%s %s %d %s %d", stocks[i].displayName, "Req:", stocks[i].minQuantity, "Stock:", item.amount) -- Stone Req: 5000 Stock: 5001
-		mPrintRowJustified(mon, row, "center", text, color)
+		mPrintRowJustified(mon, row, "right", text, color)
 		row = row + 1
 	end
 end
