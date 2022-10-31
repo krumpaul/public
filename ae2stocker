@@ -36,17 +36,8 @@
 
 -- Parameters with default values.
 local checkFrequency = 15 -- How often inventory levels are checked in seconds.  Overridden by passing as the first argument.
-local attachSide = "bottom" -- Side the computer is attached to the ME Interface (full block version).
-                            -- Overridden by passing as the second argument.
 local stockFileName = "stocker/stock_list.txt" -- Change this if you want the file somewhere else.  Can be
-                                               -- overridden via a parameter.
-local recraftDelay = 300 -- Delay, in seconds, before allowing an item to be crafted again.  If them item in question exceeds
-                         -- its min quantity before the delay expires, the delay is reset as it's assumed the job
-                         -- completed.  300 seconds = 5 minutes
-local delayedItems = {} -- List of delayed items by id:variant with delay time in seconds.  Decremented each loop by
-                        -- checkFrequency ammount.  When the delay hits 0 or lower then the item is removed from
-                        -- the list.
-
+local mincpu = 1 --Number of crafting CPU's to keep open for people.
 local DEBUG = false
 
 -- Process the input arguments - storing them to global variables
@@ -111,10 +102,6 @@ function processArgs(args)
 		checkFrequency = args[1]
 	end
 
-	if (#args > 1) then
-		assert(type(args[2]) == "string", "The second parameter (attachSide) must be a string.")
-		attachSide = args[2]:lower()
-	end
 	if (#args > 2) then
 		assert(type(args[3]) == "string", "The third parameter (stockFileName) must be a string.")
 		stockFileName = args[3]
@@ -211,11 +198,27 @@ function craftitems(mon, stocks, ae2, ... )
 end
 
 
-function isCpuAvailable(ae2)
+function isCpuAvailable(mon, ae2, ...)
 	local cpus = ae2.getCraftingCPUs()
+	countcpu = 0
+	busycpu=0
+	row = 0
+	color = 
 	for i=1, #cpus do
-		if (cpus[i].isBusy == false) then return true end
+		countcpu = countcpu + 1
+		if (cpus[i].isBusy == true) then
+			busycpu = busycpu + 1 
+		end
+		avaliablecpu = countcpu - busycpu
+		if (avaliablecpu > mincpu) then
+			color = colors.green
+			text = string.format("%d %s %d %s $d", avaliablecpu, "/", countcpu, "res:", mincpu) -- 3 / 5 leave: 2 CPU
+			mPrintRowJustified(mon, row, "right", text, color)
+			return true
+		end
 	end
+	color = colors.red
+	mPrintRowJustified(mon, row, "right", text, color)
 	return false
 end
 
