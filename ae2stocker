@@ -213,13 +213,13 @@ function isCpuAvailable(mon, ae2, ...)
 		avaliablecpu = countcpu - busycpu
 		if (avaliablecpu > mincpu) then
 			color = colors.green
-			textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "res:", mincpu) -- 3 / 5 leave: 2 CPU
+			textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
 			mPrintRowJustified(mon, rowp, "left", textcpu, color)
 			return true
 		end
 	end
 	color = colors.red
-	textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "res:", mincpu) -- 3 / 5 leave: 2 CPU
+	textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
 	mPrintRowJustified(mon, rowp, "left", textcpu, color)
 	return false
 end
