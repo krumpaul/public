@@ -33,19 +33,27 @@
 local checkFrequency = 15 -- How often inventory levels are checked in seconds.  Overridden by passing as the first argument.
 local stockFileName = "stocker/stock_list.txt" -- Change this if you want the file somewhere else.  Can be
 local mincpu = 1 --Number of crafting CPU's to keep open for people.
-
+local wppnetwork = "base"
+local wppmonitor = "wpp@base://13/monitor_5"
 -- Process the input arguments - storing them to global variables
 local args = { ... }
 function main(args)
 	processArgs(args)
 	-- Initialize Monitor
 	local monitor = peripheral.find("monitor")
-	if not monitor then error("Monitor not found.") else
-		monitor.setTextScale(0.5)
-		monitor.clear()
-		monitor.setCursorPos(1, 1)
-		monitor.setCursorBlink(false)
-		print("Monitor initialized.")
+	if not monitor then 
+		local wpp = require("wpp")
+		wpp.wireless.connect(wppnetwork)
+		local monitor = wpp.peripheral.find(wppmonitor)
+		if not monitor then 
+			print("Monitor Not Found.")
+		else
+			monitor.setTextScale(0.5)
+			monitor.clear()
+			monitor.setCursorPos(1, 1)
+			monitor.setCursorBlink(false)
+			print("Monitor initialized.")
+		end
 	end
 	-- Initialize RS Bridge
 	local ae2 = peripheral.find("meBridge")
