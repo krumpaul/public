@@ -1,0 +1,4 @@
+wget https://raw.githubusercontent.com/krumpaul/public/main/wpp_remote
+wget https://raw.githubusercontent.com/krumpaul/public/main/wpp.lua
+wget https://raw.githubusercontent.com/krumpaul/public/main/startup
+os.reboot()
