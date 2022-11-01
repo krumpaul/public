@@ -35,8 +35,9 @@ local stockFileName = "stocker/stock_list.txt" -- Change this if you want the fi
 local mincpu = 1 --Number of crafting CPU's to keep open for people.
 local wppnetwork = "base"
 local wppmonitor = "wpp@base://13/monitor_5"
-if wppnetwork then
-	wpp = require("wpp")
+local wppmebridge = "wpp@base://15/meBridge_4"
+if (wppnetwork or wppmebridge) then
+	wpp = require("/wpp")
 	print("connecting to WPP Network:", wppnetwork)
 	wpp.wireless.connect(wppnetwork)
 end
@@ -46,11 +47,11 @@ function main(args)
 	processArgs(args)
 	-- Initialize Monitor
 	local monitor = peripheral.find("monitor")
-	if not monitor then 
-		print(wppmonitor)
+	if (!monitor and wppnetwork)  then
+		print("trying WPP monitor")
 		local monitor = wpp.peripheral.wrap(wppmonitor)
 		if not monitor then 
-			print("Monitor Not Found.")
+			error("Monitor Not Found.")
 		else
 			monitor.setTextScale(0.5)
 			monitor.clear()
@@ -61,8 +62,16 @@ function main(args)
 	end
 	-- Initialize RS Bridge
 	local ae2 = peripheral.find("meBridge")
-	if not ae2 then error("ME Bridge not found.") end
-	print("ME Bridge initialized.")
+	if (!ae2 and wppnetwork) then
+		print("trying WPP bridge")
+		local ae2 = wpp.peripheral.wrap(wppmebridge)
+	end
+	if not ae2 then 
+		error("ME Bridge not found.")
+	else
+		print("ME Bridge initialized.")
+	end
+	
 	-- load stocks
 	local stocks = loadStockFile(monitor, stockFileName)
 	while (true) do
