@@ -35,6 +35,11 @@ local stockFileName = "stocker/stock_list.txt" -- Change this if you want the fi
 local mincpu = 1 --Number of crafting CPU's to keep open for people.
 local wppnetwork = "base"
 local wppmonitor = "wpp@base://13/monitor_5"
+if wppnetwork then
+	wpp = require("wpp")
+	print("connecting to WPP Network:", wppnetwork)
+	wpp.wireless.connect(wppnetwork)
+end
 -- Process the input arguments - storing them to global variables
 local args = { ... }
 function main(args)
@@ -42,9 +47,8 @@ function main(args)
 	-- Initialize Monitor
 	local monitor = peripheral.find("monitor")
 	if not monitor then 
-		local wpp = require("wpp")
-		wpp.wireless.connect(wppnetwork)
-		local monitor = wpp.peripheral.find(wppmonitor)
+		print(wppmonitor)
+		local monitor = wpp.peripheral.wrap(wppmonitor)
 		if not monitor then 
 			print("Monitor Not Found.")
 		else
