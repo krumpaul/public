@@ -49,7 +49,7 @@ function main(args)
 	local monitor = peripheral.find("monitor")
 	if (not monitor and wppnetwork)  then
 		print("trying WPP monitor")
-		local monitor = wpp.peripheral.wrap(wppmonitor)
+		monitor = wpp.peripheral.wrap(wppmonitor)
 		if not monitor then 
 			error("Monitor Not Found.")
 		else
@@ -76,8 +76,8 @@ function main(args)
 	local stocks = loadStockFile(monitor, stockFileName)
 	while (true) do
 		print("[" .. getDisplayTime() .. "] Checking inventory.")
-		if wppnetwork then local monitor = wpp.peripheral.wrap(wppmonitor) end
-		if wppnetwork then local monitor = wpp.peripheral.wrap(wppmebridge) end
+		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+		if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
 		craftitems(monitor, stocks, ae2 )
 		
 		os.sleep(checkFrequency)
@@ -88,7 +88,7 @@ function mPrintRowJustified(mon, y, pos, text, ...)
     w, h = mon.getSize()
     fg = mon.getTextColor()
     bg = mon.getBackgroundColor()
-	end
+
     if pos == "left" then x = 1 end
     if pos == "center" then x = math.floor((w - #text) / 2) end
     if pos == "right" then x = w - #text end
@@ -124,11 +124,13 @@ function loadStockFile(mon, stockFileName, ...)
 	for e in pairs(outputStocks) do
 		item = outputStocks[e]
 		if header_shown == 0 then
+			if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
 			mPrintRowJustified(mon, row, "left", "REQUESTS")
 			header_shown = 1
 			row = row + 1
 		end
 		text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
+		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
 		mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
 		row = row + 1
 	end
@@ -142,6 +144,7 @@ function craftitems(mon, stocks, ae2, ... )
 	header_shown = 0
 	if header_shown == 0 then
 		if row > 1 then row = row + 1 end
+		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
 		mPrintRowJustified(mon, row, "right", "STOCK LEVELS")
 		header_shown = 1
 		row = row + 1
@@ -150,6 +153,7 @@ function craftitems(mon, stocks, ae2, ... )
 	for i=1, #stocks do
 		color = colors.green
 		print("Checking inventory for", stocks[i].displayName)
+		if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
 		item = (ae2.getItem({ name = stocks[i].itemId}))
 		if (item == nil or item == '') then 
 			item = {name = stocks[i].itemId, amount = 0}
@@ -157,16 +161,19 @@ function craftitems(mon, stocks, ae2, ... )
 		if item.amount < stocks[i].minQuantity then
 			color = colors.red
 			print("Crafting Required for:", stocks[i].displayName)
+			if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
 			craftingstatus = ae2.isItemCrafting(item)
 			if craftingstatus then color = colors.orange end
 			if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(mon, ae2)  ) then
 				print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
 				color = colors.orange
+				if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
 				ae2.craftItem({name = item.name, count = stocks[i].batchSize})
 			end
 
 		end
 		text = string.format("%s %s %d %s %d", stocks[i].displayName, "Req:", stocks[i].minQuantity, "Stock:", item.amount) -- Stone Req: 5000 Stock: 5001
+		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
 		mPrintRowJustified(mon, row, "right", text, color)
 		row = row + 1
 	end
@@ -188,12 +195,14 @@ function isCpuAvailable(mon, ae2, ...)
 		if (avaliablecpu > mincpu) then
 			color = colors.green
 			textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
+			if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
 			mPrintRowJustified(mon, rowp, "left", textcpu, color)
 			return true
 		end
 	end
 	color = colors.red
 	textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
+	if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
 	mPrintRowJustified(mon, rowp, "left", textcpu, color)
 	return false
 end
