@@ -71,11 +71,13 @@ function main(args)
 	else
 		print("ME Bridge initialized.")
 	end
-	
 	-- load stocks
+	if wppnetwork then local monitor = wpp.peripheral.wrap(wppmonitor) end
 	local stocks = loadStockFile(monitor, stockFileName)
 	while (true) do
 		print("[" .. getDisplayTime() .. "] Checking inventory.")
+		if wppnetwork then local monitor = wpp.peripheral.wrap(wppmonitor) end
+		if wppnetwork then local monitor = wpp.peripheral.wrap(wppmebridge) end
 		craftitems(monitor, stocks, ae2 )
 		
 		os.sleep(checkFrequency)
@@ -86,7 +88,7 @@ function mPrintRowJustified(mon, y, pos, text, ...)
     w, h = mon.getSize()
     fg = mon.getTextColor()
     bg = mon.getBackgroundColor()
-
+	end
     if pos == "left" then x = 1 end
     if pos == "center" then x = math.floor((w - #text) / 2) end
     if pos == "right" then x = w - #text end
