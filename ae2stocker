@@ -47,7 +47,7 @@ function main(args)
 	processArgs(args)
 	-- Initialize Monitor
 	local monitor = peripheral.find("monitor")
-	if (!monitor and wppnetwork)  then
+	if (not monitor and wppnetwork)  then
 		print("trying WPP monitor")
 		local monitor = wpp.peripheral.wrap(wppmonitor)
 		if not monitor then 
@@ -62,14 +62,14 @@ function main(args)
 	end
 	-- Initialize RS Bridge
 	local ae2 = peripheral.find("meBridge")
-	if (!ae2 and wppnetwork) then
+	if (not ae2 and wppnetwork) then
 		print("trying WPP bridge")
 		local ae2 = wpp.peripheral.wrap(wppmebridge)
 	end
-	if not ae2 then 
+	if (not ae2 and not wppnetwork)  then 
 		error("ME Bridge not found.")
 	else
-		print("ME Bridge initialized.")
+		print("ME Bridge initialized. Assuming AE2 with WPP glitch")
 	end
 	-- load stocks
 	if wppnetwork then local monitor = wpp.peripheral.wrap(wppmonitor) end
