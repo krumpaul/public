@@ -34,24 +34,60 @@
 -- Initialize Monitor
 -- A future update may allow for multiple monitors. This would allow one
 -- monitor to be used for logging and another to be used for work requests.
-local monitor = peripheral.find("monitor")
-if not monitor then error("Monitor not found.") end
-monitor.setTextScale(0.5)
-monitor.clear()
-monitor.setCursorPos(1, 1)
-monitor.setCursorBlink(false)
-print("Monitor initialized.")
+local wppnetwork = "base"
+local wppmonitor = "wpp@base://13/monitor_5"
+local wppmebridge = "wpp@base://15/meBridge_4"
+local wppcolonybridge = "wpp@base://15/colony"
+if (wppnetwork or wppmebridge) then
+	wpp = require("/wpp")
+	print("connecting to WPP Network:", wppnetwork)
+	wpp.wireless.connect(wppnetwork)
+end
 
+
+local monitor = peripheral.find("monitor")
+if (not monitor and wppnetwork)  then
+    print("trying WPP monitor")
+    monitor = wpp.peripheral.wrap(wppmonitor)
+    if not monitor then 
+        error("Monitor Not Found.")
+    else
+        monitor.setTextScale(0.5)
+        monitor.clear()
+        monitor.setCursorPos(1, 1)
+        monitor.setCursorBlink(false)
+        print("Monitor initialized.")
+    end
+end
 -- Initialize RS Bridge
-local bridge = peripheral.find("meBridge")
-if not bridge then error("ME Bridge not found.") end
-print("ME Bridge initialized.")
+local rs = peripheral.find("meBridge")
+if (not rs and wppnetwork) then
+    print("trying WPP bridge")
+    local rs = wpp.peripheral.wrap(wppmebridge)
+end
+if (not rs and not wppnetwork)  then 
+    error("ME Bridge not found.")
+else
+    print("ME Bridge initialized. Assuming AE2 with WPP glitch")
+end
+
 
 -- Initialize Colony Integrator
 local colony = peripheral.find("colonyIntegrator")
 if not colony then error("Colony Integrator not found.") end
 if not colony.isInColony then error("Colony Integrator is not in a colony.") end
 print("Colony Integrator initialized.")
+
+local colony = peripheral.find("colonyIntegrator")
+if (not colony and wppnetwork) then
+    print("trying WPP colony bridge")
+    local colony = wpp.peripheral.wrap(wppcolonybridge)
+end
+if (not colony and not wppnetwork)  then 
+    error("Colony Bridge not found.")
+else
+    print("Colony Bridge initialized. Assuming Colony with WPP glitch")
+end
 
 -- Point to location of chest or storage container
 -- A future update may autodetect where the storage container is and error
@@ -153,10 +189,12 @@ function displayTimer(mon, t)
     timer_color = colors.orange
     if t < 15 then timer_color = colors.yellow end
     if t < 5 then timer_color = colors.red end
-
+    if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
     mPrintRowJustified(mon, 1, "left", string.format("Time: %s [%s]    ", textutils.formatTime(now, false), cycle), cycle_color)
     if cycle ~= "night" then mPrintRowJustified(mon, 1, "right", string.format("    Remaining: %ss", t), timer_color)
-    else mPrintRowJustified(mon, 1, "right", "    Remaining: PAUSED", colors.red) end
+    else
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+        mPrintRowJustified(mon, 1, "right", "    Remaining: PAUSED", colors.red) end
 end
 
 -- Scan all open work requests from the Warehouse and attempt to satisfy those
@@ -187,6 +225,7 @@ function scanWorkRequests(mon, rs, chest)
     -- Scan RS for all items in its network. Ignore items with NBT data.
     -- If a Builder needs any items with NBT data, this function will need
     -- to be updated to not ignore those items.
+    if wppnetwork then rs = wpp.peripheral.wrap(wppmebridge) end
     items = rs.listItems()
     item_array = {}
     for index, item in ipairs(items) do
@@ -201,6 +240,7 @@ function scanWorkRequests(mon, rs, chest)
     -- provide as much as possible from RS, then craft whatever is needed
     -- after that. Green means item was provided entirely. Yellow means item
     -- is being crafted. Red means item is missing crafting recipe.
+    if wppnetwork then colony = wpp.peripheral.wrap(wppcolonybridge) end
     workRequests = colony.getRequests()
     file.write(textutils.serialize(workRequests))
     for w in pairs(workRequests) do
@@ -259,16 +299,20 @@ function scanWorkRequests(mon, rs, chest)
         if useRS == 1 then
             if item_array[string.lower(item)] then
 				print("exporting:", string.lower(item))
+            if wppnetwork then rs = wpp.peripheral.wrap(wppmebridge) end
                 provided = rs.exportItem({name=string.lower(item), count=needed}, chest)
             end
 
             color = colors.green
             if provided < needed then
+                if wppnetwork then rs = wpp.peripheral.wrap(wppmebridge) end
                 if rs.isItemCrafting({name=string.lower(item)}) then
                     color = colors.yellow
                     print("[Crafting]", item)
                 else
+                    if wppnetwork then rs = wpp.peripheral.wrap(wppmebridge) end
                     if rs.isItemCraftable({name=string.lower(item)}) then
+                        if wppnetwork then rs = wpp.peripheral.wrap(wppmebridge) end
 						if rs.craftItem({name=string.lower(item), count=needed}) then
 							color = colors.yellow
 							print("[Scheduled]", needed, "x", item)
@@ -313,17 +357,20 @@ function scanWorkRequests(mon, rs, chest)
 
     -- Show the various lists on the attached monitor.
     row = 3
+    if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
     mon.clear()
 
     header_shown = 0
     for e in pairs(equipment_list) do
         equipment = equipment_list[e]
         if header_shown == 0 then
+            if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
             mPrintRowJustified(mon, row, "center", "Equipment")
             header_shown = 1
             row = row + 1
         end
         text = string.format("%d %s", equipment.needed, equipment.name)
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         mPrintRowJustified(mon, row, "left", text, equipment.color)
         mPrintRowJustified(mon, row, "right", " " .. equipment.target, equipment.color)
         row = row + 1
@@ -334,21 +381,23 @@ function scanWorkRequests(mon, rs, chest)
         builder = builder_list[b]
         if header_shown == 0 then
             if row > 1 then row = row + 1 end
+            if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
             mPrintRowJustified(mon, row, "center", "Builder Requests")
             header_shown = 1
             row = row + 1
         end
         text = string.format("%d/%s", builder.provided, builder.name)
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         mPrintRowJustified(mon, row, "left", text, builder.color)
         mPrintRowJustified(mon, row, "right", " " .. builder.target, builder.color)
         row = row + 1
     end
-
     header_shown = 0
     for n in pairs(nonbuilder_list) do
         nonbuilder = nonbuilder_list[n]
         if header_shown == 0 then
             if row > 1 then row = row + 1 end
+            if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
             mPrintRowJustified(mon, row, "center", "Nonbuilder Requests")
             header_shown = 1
             row = row + 1
@@ -357,11 +406,12 @@ function scanWorkRequests(mon, rs, chest)
         if isdigit(nonbuilder.name:sub(1,1)) then
             text = string.format("%d/%s", nonbuilder.provided, nonbuilder.name)
         end
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         mPrintRowJustified(mon, row, "left", text, nonbuilder.color)
         mPrintRowJustified(mon, row, "right", " " .. nonbuilder.target, nonbuilder.color)
         row = row + 1
     end
-
+    if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
     if row == 3 then mPrintRowJustified(mon, row, "center", "No Open Requests") end
     print("Scan completed at", textutils.formatTime(os.time(), false) .. " (" .. os.time() ..").")
     file.close()
@@ -381,6 +431,10 @@ scanWorkRequests(monitor, bridge, storage)
 displayTimer(monitor, current_run)
 local TIMER = os.startTimer(1)
 
+if wppnetwork then rs = wpp.peripheral.wrap(wppmebridge) end
+if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+if wppnetwork then colony = wpp.peripheral.wrap(wppcolonybridge) end
+
 while true do
     local e = {os.pullEvent()}
     if e[1] == "timer" and e[2] == TIMER then
@@ -388,6 +442,8 @@ while true do
         if now >= 5 and now < 19.5 then
             current_run = current_run - 1
             if current_run <= 0 then
+                if wppnetwork then colony = wpp.peripheral.wrap(wppcolonybridge) end
+                if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
                 scanWorkRequests(monitor, bridge, storage)
                 current_run = time_between_runs
             end
@@ -396,8 +452,11 @@ while true do
         TIMER = os.startTimer(1)
     elseif e[1] == "monitor_touch" then
         os.cancelTimer(TIMER)
+        if wppnetwork then colony = wpp.peripheral.wrap(wppcolonybridge) end
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         scanWorkRequests(monitor, bridge, storage)
         current_run = time_between_runs
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         displayTimer(monitor, current_run)
         TIMER = os.startTimer(1)
     end

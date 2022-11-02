@@ -124,14 +124,14 @@ function loadStockFile(mon, stockFileName, ...)
 	for e in pairs(outputStocks) do
 		item = outputStocks[e]
 		if header_shown == 0 then
-			if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-			mPrintRowJustified(mon, row, "left", "REQUESTS")
+			--if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+			--mPrintRowJustified(mon, row, "left", "REQUESTS")
 			header_shown = 1
 			row = row + 1
 		end
 		text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
-		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-		mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
+		--if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+		--mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
 		row = row + 1
 	end
 
