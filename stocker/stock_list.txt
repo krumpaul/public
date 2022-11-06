@@ -76,4 +76,32 @@
 		minQuantity = 64,
 		batchSize = 10,
 	},
+	{
+		displayName = "FluixDust",
+		itemId = "ae2:fluix_dust",
+		variant = 0,
+		minQuantity = 100,
+		batchSize = 30,
+	},
+	{
+		displayName = "Acc Card",
+		itemId = "ae2:speed_card",
+		variant = 0,
+		minQuantity = 10,
+		batchSize = 5,
+	},
+	{
+		displayName = "Comp Iron",
+		itemId = "pneumaticcraft:ingot_iron_compressed",
+		variant = 0,
+		minQuantity = 200,
+		batchSize = 30,
+	},
+	{
+		displayName = "Oak Planks",
+		itemId = "minecraft:oak_planks",
+		variant = 0,
+		minQuantity = 1000,
+		batchSize = 64,
+	},
 }

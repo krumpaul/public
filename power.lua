@@ -17,7 +17,7 @@ local upper = 0.98 --Upper limit for computer to stop transmitting redstone sign
 local lower = 0.05 --Lower limit for computer to start transmitting redstone signal.
 local redstoneSide = "none" -- Change this to the side you want to output the redstone signal to. ["left","right","top","bottom","front","back","none"]
 local capacitorBankBlocks = 0 -- If you have OpenPeripherals without Computronics you need to specify how many blocks your Capacitor Bank contains. Only works properly for one Capacitor Bank. If you have Computronics, this variable won't do anything.
-local wppnetwork = "base
+local wppnetwork = "base"
 
 --Don't change these:
 cellCount = 0
