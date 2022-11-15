@@ -95,13 +95,13 @@ function mPrintRowJustified(mon, y, pos, text, ...)
     if pos == "center" then x = math.floor((w - #text) / 2) end
     if pos == "right" then x = w - #text end
 
-    if #arg > 0 < 4 then mon.setTextColor(arg[1]) end
-    if #arg > 1 < 4 then mon.setBackgroundColor(arg[2]) end
+    if #arg > 0 and #arg < 4 then mon.setTextColor(arg[1]) end
+    if #arg > 1 and #arg < 4 then mon.setBackgroundColor(arg[2]) end
 	--mPrintRowJustified(mon, row, "right", text, color)
 	-- mPrintRowJustified(mon,row, "right", " ", length, minVal, maxVal, colors.gray, colors.green)
 	if #arg > 3 then 
 		mon.setBackgroundColor(bg)
-		progress_bar(x, y, arg[1], arg[2], arg[3], arg[4], arg[5])
+		progress_bar(mon, x, y, arg[1], arg[2], arg[3], arg[4], arg[5])
 	else
 		mon.setCursorPos(x, y)
 		mon.write(text)
@@ -114,10 +114,10 @@ end
 --draws two overlapping lines
 --background line of bg_color
 --main line of bar_color as a percentage of minVal/maxVal
-function progress_bar(x, y, length, minVal, maxVal, bar_color, bg_color)
-	draw_line(x, y, length, bg_color) --backgoround bar
+function progress_bar(mon, x, y, length, minVal, maxVal, bar_color, bg_color)
+	draw_line(mon, x, y, length, bg_color) --backgoround bar
 	local barSize = math.floor((minVal / maxVal) * length)
-	draw_line(x, y, barSize, bar_color) --progress so far
+	draw_line(mon, x, y, barSize, bar_color) --progress so far
   end
   
   --same as above but on the computer terminal
@@ -129,7 +129,7 @@ function progress_bar(x, y, length, minVal, maxVal, bar_color, bg_color)
  -- progress_bar(5, 7, 20, insertion_percent, 100, colors.yellow, colors.gray)
 -- Start the actual program
 --draw line on computer terminal
-function draw_line(x, y, length, color)
+function draw_line(mon, x, y, length, color)
 	mon.setBackgroundColor(color)
 	mon.setCursorPos(x, y)
 	mon.write(string.rep(" ", length))
