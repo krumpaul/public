@@ -31,58 +31,80 @@
 
 -- Parameters with default values.
 local checkFrequency = 15 -- How often inventory levels are checked in seconds.  Overridden by passing as the first argument.
-local stockFileName = "stocker/stock_list.txt" -- Change this if you want the file somewhere else.  Can be
+local stockFileName = "stocker/stock_list.txt" -- Change this if you want the file somewhere else.
 local mincpu = 1 --Number of crafting CPU's to keep open for people.
+local useProgressBar = true -- Set to true or false depending if you want TEXT or Progress Bar output.
 local wppnetwork = "base"
 local wppmonitor = "wpp@base://13/monitor_5"
 local wppmebridge = "wpp@base://15/meBridge_4"
+local sliderBackgroundDefault = colors.gray
+local sliderForegroundDefault = colors.red
+local sliderBarHeightDefault = 3
+
+
+
+
+if (useProgressBar == true) then
+    if fs.exists("sliders") then 
+      Sliders = require("/sliders")
+    else
+      shell.run("wget ")
+    end
+    shell.run("pastebin get mcgdnR3K install")
+    shell.run("install")
+  end
+    Sliders = require("/sliders")
+end
+
 if (wppnetwork or wppmebridge) then
-	wpp = require("/wpp")
-	print("connecting to WPP Network:", wppnetwork)
-	wpp.wireless.connect(wppnetwork)
+    wpp = require("/wpp")
+    print("connecting to WPP Network:", wppnetwork)
+    wpp.wireless.connect(wppnetwork)
 end
 -- Process the input arguments - storing them to global variables
 local args = { ... }
 function main(args)
-	processArgs(args)
-	-- Initialize Monitor
-	local monitor = peripheral.find("monitor")
-	if (not monitor and wppnetwork)  then
-		print("trying WPP monitor")
-		monitor = wpp.peripheral.wrap(wppmonitor)
-		if not monitor then 
-			error("Monitor Not Found.")
-		else
-			monitor.setTextScale(0.5)
-			monitor.clear()
-			monitor.setCursorPos(1, 1)
-			monitor.setCursorBlink(false)
-			print("Monitor initialized.")
-		end
-	end
-	-- Initialize RS Bridge
-	local ae2 = peripheral.find("meBridge")
-	if (not ae2 and wppnetwork) then
-		print("trying WPP bridge")
-		local ae2 = wpp.peripheral.wrap(wppmebridge)
-	end
-	if (not ae2 and not wppnetwork)  then 
-		error("ME Bridge not found.")
-	else
-		print("ME Bridge initialized. Assuming AE2 with WPP glitch")
-	end
-	-- load stocks
-	if wppnetwork then local monitor = wpp.peripheral.wrap(wppmonitor) end
-	local stocks = loadStockFile(monitor, stockFileName)
-	while (true) do
-		print("[" .. getDisplayTime() .. "] Checking inventory.")
-		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-		if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
-		craftitems(monitor, stocks, ae2 )
-		
-		os.sleep(checkFrequency)
-	end
+    processArgs(args)
+    -- Initialize Monitor
+    local monitor = peripheral.find("monitor")
+    if (not monitor and wppnetwork)  then
+        print("trying WPP monitor")
+        monitor = wpp.peripheral.wrap(wppmonitor)
+        if not monitor then 
+            error("Monitor Not Found.")
+        else
+            monitor.setTextScale(0.5)
+            monitor.clear()
+            monitor.setCursorPos(1, 1)
+            monitor.setCursorBlink(false)
+            print("Monitor initialized.")
+            if (useProgressBar == true) then  end
+        end
+    end
+    -- Initialize RS Bridge
+    local ae2 = peripheral.find("meBridge")
+    if (not ae2 and wppnetwork) then
+        print("trying WPP bridge")
+        local ae2 = wpp.peripheral.wrap(wppmebridge)
+    end
+    if (not ae2 and not wppnetwork)  then 
+        error("ME Bridge not found.")
+    else
+        print("ME Bridge initialized. Assuming AE2 with WPP glitch")
+    end
+    -- load stocks
+    if wppnetwork then local monitor = wpp.peripheral.wrap(wppmonitor) end
+    local stocks = loadStockFile(monitor, stockFileName)
+    while (true) do
+        print("[" .. getDisplayTime() .. "] Checking inventory.")
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+        if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
+        craftitems(monitor, stocks, ae2 )
+        os.sleep(checkFrequency)
+    end
 end
+
+
 
 --progress_bar(5, 7, 20, insertion_percent, 100, colors.yellow, colors.gray)
 
@@ -97,17 +119,17 @@ function mPrintRowJustified(mon, y, pos, text, ...)
 
     if #arg > 0 and #arg < 4 then mon.setTextColor(arg[1]) end
     if #arg > 1 and #arg < 4 then mon.setBackgroundColor(arg[2]) end
-	--mPrintRowJustified(mon, row, "right", text, color)
-	-- mPrintRowJustified(mon,row, "right", " ", length, minVal, maxVal, colors.gray, colors.green)
-	if #arg > 3 then 
-		mon.setBackgroundColor(bg)
-		progress_bar(mon, x, y, arg[1], arg[2], arg[3], arg[4], arg[5])
-	else
-		mon.setCursorPos(x, y)
-		mon.write(text)
-		mon.setTextColor(fg)
-		mon.setBackgroundColor(bg)
-	end
+    --mPrintRowJustified(mon, row, "right", text, color)
+    -- mPrintRowJustified(mon,row, "right", " ", length, minVal, maxVal, colors.gray, colors.green)
+    if #arg > 3 then 
+        mon.setBackgroundColor(bg)
+        progress_bar(mon, x, y, arg[1], arg[2], arg[3], arg[4], arg[5])
+    else
+        mon.setCursorPos(x, y)
+        mon.write(text)
+        mon.setTextColor(fg)
+        mon.setBackgroundColor(colors.black)
+    end
 
 end
 --create progress bar
@@ -115,168 +137,202 @@ end
 --background line of bg_color
 --main line of bar_color as a percentage of minVal/maxVal
 function progress_bar(mon, x, y, length, minVal, maxVal, bar_color, bg_color)
-	draw_line(mon, x, y, length, bg_color) --backgoround bar
-	local barSize = math.floor((minVal / maxVal) * length)
-	draw_line(mon, x, y, barSize, bar_color) --progress so far
+    draw_line(mon, x, y, length, bg_color) --backgoround bar
+    if minVal > maxVal then
+        BarSize = length
+    else
+        BarSize = math.floor((minVal / maxVal) * length)
+    end
+    draw_line(mon, x, y, BarSize, bar_color) --progress so far
   end
   
   --same as above but on the computer terminal
   function progress_bar_term(x, y, length, minVal, maxVal, bar_color, bg_color)
-	draw_line_term(x, y, length, bg_color) --backgoround bar
-	local barSize = math.floor((minVal / maxVal) * length)
-	draw_line_term(x, y, barSize, bar_color) --progress so far
+    draw_line_term(x, y, length, bg_color) --backgoround bar
+    if minVal > maxVal then
+        BarSize = length
+    else
+        BarSize = math.floor((minVal / maxVal) * length)
+    end
+    draw_line_term(x, y, BarSize, bar_color) --progress so far
   end
  -- progress_bar(5, 7, 20, insertion_percent, 100, colors.yellow, colors.gray)
 -- Start the actual program
 --draw line on computer terminal
 function draw_line(mon, x, y, length, color)
-	mon.setBackgroundColor(color)
-	mon.setCursorPos(x, y)
-	mon.write(string.rep(" ", length))
+    mon.setBackgroundColor(color)
+    mon.setCursorPos(x, y)
+    mon.write(string.rep(" ", length))
   end
   
   --draw line on computer terminal
   function draw_line_term(x, y, length, color)
-	term.setBackgroundColor(color)
-	term.setCursorPos(x, y)
-	term.write(string.rep(" ", length))
+    term.setBackgroundColor(color)
+    term.setCursorPos(x, y)
+    term.write(string.rep(" ", length))
   end
 
 
 function processArgs(args)
-	if (#args >= 1) then
-		assert(type(args[1]) == "number", "The first parameter (checkFrequency) must be a number.")
-		checkFrequency = args[1]
-	end
+    if (#args >= 1) then
+        assert(type(args[1]) == "number", "The first parameter (checkFrequency) must be a number.")
+        checkFrequency = args[1]
+    end
 
-	if (#args > 2) then
-		assert(type(args[3]) == "string", "The third parameter (stockFileName) must be a string.")
-		stockFileName = args[3]
-	end
-	assert(fs.exists(stockFileName), "The stock file does not exist: " .. stockFileName)
+    if (#args > 2) then
+        assert(type(args[3]) == "string", "The third parameter (stockFileName) must be a string.")
+        stockFileName = args[3]
+    end
+    assert(fs.exists(stockFileName), "The stock file does not exist: " .. stockFileName)
 end
 
 function loadStockFile(mon, stockFileName, ...)
-	local stockFile = fs.open(stockFileName, "r")
-	local stockFileContents = stockFile.readAll();
-	stockFile.close();
-	local outputStocks = textutils.unserialize(stockFileContents)
-	row = 3
-	header_shown = 0
-	for e in pairs(outputStocks) do
-		item = outputStocks[e]
-		if header_shown == 0 then
-			--if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-			--mPrintRowJustified(mon, row, "left", "REQUESTS")
-			header_shown = 1
-			row = row + 1
-		end
-		text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
-		--if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-		--mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
-		row = row + 1
-	end
+    local stockFile = fs.open(stockFileName, "r")
+    local stockFileContents = stockFile.readAll();
+    stockFile.close();
+    local outputStocks = textutils.unserialize(stockFileContents)
+    row = 3
+    header_shown = 0
+    for e in pairs(outputStocks) do
+        item = outputStocks[e]
+        if header_shown == 0 then
+            --if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+            --mPrintRowJustified(mon, row, "left", "REQUESTS")
+            header_shown = 1
+            row = row + 1
+        end
+        text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
+        if useProgressBar == true then  
+          sliderbarSetup(mon, item.displayName, 0, row, 0, 0, colors.gray, colors.green) 
+        else
+          --  if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+          --  mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
+        end
+        row = row + 1
+    end
 
-	assert(#outputStocks > 0, "There are no entries in the " .. stockFileName .. " file.")
-	return outputStocks
+    assert(#outputStocks > 0, "There are no entries in the " .. stockFileName .. " file.")
+    return outputStocks
+end
+
+function sliderbarSetup(mon, itemname, x, y, width, height, background, foreground)
+  w, h = mon.getSize()
+  if width == 0 then width = w end
+  if x == 0 then x = 1 end
+  if height == 0 then height = sliderBarHeightDefault end
+  Sliders.setMonitor(mon)
+  Sliders.createSlider(itemname, x, y, width, height, background, foreground)
+end
+
+function sliderbarupdate(slidername, maxval, curval)
+  local itempercent = 0 
+  if curval > maxval then
+    itempercent = 100;
+  else
+    itempercent = math.floor((curval / maxval) * 100)
+  end
+  Sliders.updateSlider(slidername, i)
 end
 
 function craftitems(mon, stocks, ae2, ... )
-	row = 1
-	header_shown = 0
-	if header_shown == 0 then
-		if row > 1 then row = row + 1 end
-		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-		mPrintRowJustified(mon, row, "right", "STOCK LEVELS")
-		header_shown = 1
-		row = row + 1
-	end
-
-	for i=1, #stocks do
-		color = colors.green
-		print("Checking inventory for", stocks[i].displayName)
-		if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
-		item = (ae2.getItem({ name = stocks[i].itemId}))
-		if (item == nil or item == '') then 
-			item = {name = stocks[i].itemId, amount = 0}
-		end
-		if item.amount < stocks[i].minQuantity then
-			color = colors.red
-			print("Crafting Required for:", stocks[i].displayName)
-			if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
-			craftingstatus = ae2.isItemCrafting(item)
-			if craftingstatus then color = colors.orange end
-			if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(mon, ae2)  ) then
-				print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
-				color = colors.orange
-				if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
-				ae2.craftItem({name = item.name, count = stocks[i].batchSize})
-			end
-
-		end
-		text = string.format("%s %s %d %s %d", stocks[i].displayName, "Req:", stocks[i].minQuantity, "Stock:", item.amount) -- Stone Req: 5000 Stock: 5001
-		if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-		mPrintRowJustified(mon, row, "right", " ", 20, item.amount, stocks[i].minQuantity, colors.gray, colors.green)
-		--mPrintRowJustified(mon, row, "right", text, color)
-		row = row + 1
-	end
+    row = 1
+    header_shown = 0
+    if header_shown == 0 then
+        if row > 1 then row = row + 1 end
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+        mPrintRowJustified(mon, row, "right", "STOCK LEVELS")
+        header_shown = 1
+        row = row + 1
+    end
+    for i=1, #stocks do
+        color = colors.green
+        print("Checking inventory for", stocks[i].displayName)
+        if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
+        item = (ae2.getItem({ name = stocks[i].itemId}))
+        if (item == nil or item == '') then 
+            item = {name = stocks[i].itemId, amount = 0}
+        end
+        if item.amount < stocks[i].minQuantity then
+            color = colors.red
+            print("Crafting Required for:", stocks[i].displayName)
+            if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
+            craftingstatus = ae2.isItemCrafting(item)
+            if craftingstatus then color = colors.orange end
+            if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(mon, ae2)  ) then
+                print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
+                color = colors.orange
+                if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
+                ae2.craftItem({name = item.name, count = stocks[i].batchSize})
+            end
+        end
+        text = string.format("%s %s %d %s %d", stocks[i].displayName, "Req:", stocks[i].minQuantity, "Stock:", item.amount) -- Stone Req: 5000 Stock: 5001
+        if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+        if useProgressBar == true then
+          sliderbarupdate(stocks[i].displayName, stocks[i].minQuantity, item.amount)
+        else
+          mPrintRowJustified(mon, row, "right", " ", 20, item.amount, stocks[i].minQuantity, colors.gray, colors.green)
+        end
+        --mPrintRowJustified(mon, row, "right", text, color)
+        row = row + 1
+    end
+    if useProgressBar == true then Sliders.draw() end
 end
 
 function isCpuAvailable(mon, ae2, ...)
-	local cpus = ae2.getCraftingCPUs()
-	countcpu = 0
-	busycpu=0
-	local rowp = 1
-	color = colors.blue
-	local textcpu = "test"
-	for i=1, #cpus do
-		countcpu = countcpu + 1
-		if (cpus[i].isBusy == true) then
-			busycpu = busycpu + 1 
-		end
-		avaliablecpu = countcpu - busycpu
-		if (avaliablecpu > mincpu) then
-			color = colors.green
-			textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
-			if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-			mPrintRowJustified(mon, rowp, "left", textcpu, color)
-			return true
-		end
-	end
-	color = colors.red
-	textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
-	if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-	mPrintRowJustified(mon, rowp, "left", textcpu, color)
-	return false
+    local cpus = ae2.getCraftingCPUs()
+    countcpu = 0
+    busycpu=0
+    local rowp = 1
+    color = colors.blue
+    local textcpu = "test"
+    for i=1, #cpus do
+        countcpu = countcpu + 1
+        if (cpus[i].isBusy == true) then
+            busycpu = busycpu + 1 
+        end
+        avaliablecpu = countcpu - busycpu
+        if (avaliablecpu > mincpu) then
+            color = colors.green
+            textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
+            if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+            mPrintRowJustified(mon, rowp, "left", textcpu, color)
+            return true
+        end
+    end
+    color = colors.red
+    textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
+    if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+    mPrintRowJustified(mon, rowp, "left", textcpu, color)
+    return false
 end
 
 function getDisplayTime()
-	return textutils.formatTime(os.time(), false)
+    return textutils.formatTime(os.time(), false)
 end
 
 function enableAutoRestart()
-	-- Skip this if any startup file already exists.
-	-- Let the user manaully delete or edit the startup file at that point.
-	-- Notify the user.
-	if (fs.exists("startup") == true) then
-		print("Startup file already exists.")
-		return
-	end
+    -- Skip this if any startup file already exists.
+    -- Let the user manaully delete or edit the startup file at that point.
+    -- Notify the user.
+    if (fs.exists("startup") == true) then
+        print("Startup file already exists.")
+        return
+    end
 
-	outputFile = fs.open("startup", "w")
+    outputFile = fs.open("startup", "w")
 
-	-- Write an info message so that people know how to get out of auto-resume
-	outputFile.write("\nprint(\"Running auto-restart...\")\n")
-	outputFile.write("print(\"If you want to stop auto-resume and restore original state:\")\n")
-	outputFile.write("print(\"1) Hold Ctrl-T until the program terminates\")\n")
-	outputFile.write("print(\"2) Type \\\"rm startup\\\" (without quotes) and hit Enter\")\n")
-	outputFile.write("print(\"\")\n\n")
+    -- Write an info message so that people know how to get out of auto-resume
+    outputFile.write("\nprint(\"Running auto-restart...\")\n")
+    outputFile.write("print(\"If you want to stop auto-resume and restore original state:\")\n")
+    outputFile.write("print(\"1) Hold Ctrl-T until the program terminates\")\n")
+    outputFile.write("print(\"2) Type \\\"rm startup\\\" (without quotes) and hit Enter\")\n")
+    outputFile.write("print(\"\")\n\n")
 
-	-- Write the code required to restart the turtle
-	outputFile.write("shell.run(\"")
-	outputFile.write(shell.getRunningProgram())
-	outputFile.write("\")\n")
-	outputFile.close()
+    -- Write the code required to restart the turtle
+    outputFile.write("shell.run(\"")
+    outputFile.write(shell.getRunningProgram())
+    outputFile.write("\")\n")
+    outputFile.close()
 end
 
 
