@@ -45,19 +45,23 @@ local sliderBarHeightDefault = 3
 
 
 if (useProgressBar == true) then
-    if fs.exists("sliders") then 
-      Sliders = require("/sliders")
-    else
-      shell.run("wget ")
-    end
-    shell.run("pastebin get mcgdnR3K install")
-    shell.run("install")
-  end
+  if fs.exists("sliders") then 
     Sliders = require("/sliders")
+  else
+    print("Downloading sliders library...")
+    shell.run("wget https://raw.githubusercontent.com/krumpaul/public/main/sliders.lua sliders")
+    Sliders = require("/sliders")
+  end
 end
 
 if (wppnetwork or wppmebridge) then
+  if fs.exists("wpp") then
     wpp = require("/wpp")
+  else
+    print("Downloading wpp library...")
+    shell.run("wget https://raw.githubusercontent.com/krumpaul/public/main/wpp.lua wpp")
+    wpp = require("/wpp")
+  end
     print("connecting to WPP Network:", wppnetwork)
     wpp.wireless.connect(wppnetwork)
 end
