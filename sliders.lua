@@ -2,7 +2,11 @@ local sliders = {}
 local monitor = nil
 
 function setMonitor(side)
-    monitor = peripheral.wrap(side)
+    if fs.exists("wpp") then
+        monitor = side
+    else
+        monitor = peripheral.wrap(side)
+    end
     if not (monitor.isColor()) then
         error("Monitor Doesn't Support Colors")
     end
