@@ -13,7 +13,7 @@ function createSlider(name, x, y, length, height, sliderColor, barColor)
     -- Checks if name is not unique
     for k,v in pairs(sliders) do
         if name == k then
-            error(name .. " already exist!")
+            error(name " already exist!")
         end
     end
 
@@ -40,9 +40,9 @@ end
 -- This functions sets the value of the slider.
 function updateSlider(name, value)
     if value > 100 then
-        error(.. name ": Value can not be over 100!")
+        error(name ": Value can not be over 100!")
     elseif value < 0 then
-        error(.. name ": Value can not be under 0!")
+        error(name ": Value can not be under 0!")
     end
 
     for k,v in pairs(sliders) do
