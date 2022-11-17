@@ -46,11 +46,11 @@ local sliderBarHeightDefault = 3
 
 if (useProgressBar == true) then
   if fs.exists("sliders") then 
-    Sliders = require("/sliders")
+    os.loadAPI("sliders")
   else
     print("Downloading sliders library...")
     shell.run("wget https://raw.githubusercontent.com/krumpaul/public/main/sliders.lua sliders")
-    Sliders = require("/sliders")
+    os.loadAPI("sliders")
   end
 end
 
@@ -195,7 +195,10 @@ function loadStockFile(mon, stockFileName, ...)
     local stockFileContents = stockFile.readAll();
     stockFile.close();
     local outputStocks = textutils.unserialize(stockFileContents)
-    row = 3
+    if useProgressBar == true then
+      srow = 2
+    end
+    row = 1
     header_shown = 0
     for e in pairs(outputStocks) do
         item = outputStocks[e]
@@ -206,13 +209,16 @@ function loadStockFile(mon, stockFileName, ...)
             row = row + 1
         end
         text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
-        if useProgressBar == true then  
-          sliderbarSetup(mon, item.displayName, 0, row, 0, 0, colors.gray, colors.green) 
+        if useProgressBar == true then
+          srow = srow + 2
+          mPrintRowJustified(mon, row, "left", text, colors.white, ...)
+          sliderbarSetup(mon, item.displayName, 0, srow, 0, 1, colors.gray, colors.green)
+          row = row + 2
         else
-          --  if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-          --  mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
+          --if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+          --mPrintRowJustified(mon, row, "left", text, colors.blue, ...)
+          row = row + 1
         end
-        row = row + 1
     end
 
     assert(#outputStocks > 0, "There are no entries in the " .. stockFileName .. " file.")
@@ -224,8 +230,8 @@ function sliderbarSetup(mon, itemname, x, y, width, height, background, foregrou
   if width == 0 then width = w end
   if x == 0 then x = 1 end
   if height == 0 then height = sliderBarHeightDefault end
-  Sliders.setMonitor(mon)
-  Sliders.createSlider(itemname, x, y, width, height, background, foreground)
+  sliders.setMonitor(mon)
+  sliders.createSlider(itemname, x, y, width, height, foreground, background)
 end
 
 function sliderbarupdate(slidername, maxval, curval)
@@ -235,7 +241,7 @@ function sliderbarupdate(slidername, maxval, curval)
   else
     itempercent = math.floor((curval / maxval) * 100)
   end
-  Sliders.updateSlider(slidername, i)
+  sliders.updateSlider(slidername, itempercent)
 end
 
 function craftitems(mon, stocks, ae2, ... )
@@ -273,13 +279,13 @@ function craftitems(mon, stocks, ae2, ... )
         if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         if useProgressBar == true then
           sliderbarupdate(stocks[i].displayName, stocks[i].minQuantity, item.amount)
+          row = row + 2
         else
-          mPrintRowJustified(mon, row, "right", " ", 20, item.amount, stocks[i].minQuantity, colors.gray, colors.green)
+          mPrintRowJustified(mon, row, "right", text, color)
+          row = row + 1
         end
-        --mPrintRowJustified(mon, row, "right", text, color)
-        row = row + 1
     end
-    if useProgressBar == true then Sliders.draw() end
+    if useProgressBar == true then sliders.draw() end
 end
 
 function isCpuAvailable(mon, ae2, ...)
@@ -292,17 +298,17 @@ function isCpuAvailable(mon, ae2, ...)
     for i=1, #cpus do
         countcpu = countcpu + 1
         if (cpus[i].isBusy == true) then
-            busycpu = busycpu + 1 
+            busycpu = busycpu + 1
         end
         avaliablecpu = countcpu - busycpu
-        if (avaliablecpu > mincpu) then
-            color = colors.green
-            textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
-            if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
-            mPrintRowJustified(mon, rowp, "left", textcpu, color)
-            return true
-        end
     end
+    if (avaliablecpu > mincpu) then
+      color = colors.green
+      textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
+      if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
+      mPrintRowJustified(mon, rowp, "left", textcpu, color)
+      return true
+  end
     color = colors.red
     textcpu = string.format("%s %d %s %d %s %d", "CPUs:", avaliablecpu, "/", countcpu, "reserved:", mincpu) -- 3 / 5 leave: 2 CPU
     if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
