@@ -280,7 +280,7 @@ function craftitems(mon, stocks, ae2, ... )
         if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         if useProgressBar == true then
           text = string.format("%s", stocks[i].displayName) -- Stone 5000/5001
-          text2 = string.format("%s", item.amount .. "/" .. stocks[i].minQuantity) -- Stone 5000/5001
+          text2 = string.format("%s", "    " .. item.amount .. "/" .. stocks[i].minQuantity) -- Stone 5000/5001
           mPrintRowJustified(mon, row, "left", text, color, ...) -- PRINT NAME
           mPrintRowJustified(mon, row, "right", text2, color, ...) -- PRINT AMOUNT
           sliderbarupdate(stocks[i].displayName, stocks[i].minQuantity, item.amount)
