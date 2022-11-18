@@ -244,7 +244,6 @@ end
 
 function craftitems(mon, stocks, ae2, ... )
     row = 1
-    trow = 1
     header_shown = 0
     if header_shown == 0 then
         if row > 1 then row = row + 1 end
@@ -274,10 +273,10 @@ function craftitems(mon, stocks, ae2, ... )
                 ae2.craftItem({name = item.name, count = stocks[i].batchSize})
             end
         end
-        text = string.format("%s %d %s %d", stocks[i].displayName, stocks[i].minQuantity, "/", item.amount) -- Stone 5000/5001
+        text = string.format("%s %s", stocks[i].displayName .. ":", item.amount .. "/" .. stocks[i].minQuantity) -- Stone 5000/5001
         if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         if useProgressBar == true then
-          mPrintRowJustified(mon, row - 1, "left", text, colors.white, ...)
+          mPrintRowJustified(mon, row, "left", text, color, ...)
           sliderbarupdate(stocks[i].displayName, stocks[i].minQuantity, item.amount)
           row = row + 2
         else
