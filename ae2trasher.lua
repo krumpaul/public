@@ -46,7 +46,9 @@ if fs.exists(trashFileName) then
      -- do nothing
     else
         shell.run("mkdir", "/trasher")
-        shell.run("wget https://raw.githubusercontent.com/krumpaul/public/main/trasher/trash_list.txt wpp")
+        shell.run("cd", "/trasher")
+        shell.run("wget https://raw.githubusercontent.com/krumpaul/public/main/trasher/trash_list.txt trash_list.txt")
+        shell.run("cd", "../")
     end
 end
 
@@ -70,7 +72,7 @@ end
             row = row + 1
             srow = srow + 1
         end
-        text = string.format("%s %s %d",item.displayName ,":", item.minQuantity)
+        text = string.format("%s %s %d",item.displayName ,":", item.maxQuantity)
         if useProgressBar == true then
           sliderbarSetup(mon, item.displayName, 0, srow, 0, 1, colors.gray, colors.green)
           srow = srow + 2
@@ -177,13 +179,13 @@ function trashitems(mon, trash, trashperi, ... )
         --if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         if useProgressBar == true then
           text = string.format("%s", trash[i].displayName) -- Stone 5000/5001
-          text2 = string.format("%s", "    " .. item.amount .. "/" .. trash[i].minQuantity) -- Stone 5000/5001
+          text2 = string.format("%s", "    " .. item.amount .. "/" .. trash[i].maxQuantity) -- Stone 5000/5001
           mPrintRowJustified(mon, row, "left", text, color, ...) -- PRINT NAME
           mPrintRowJustified(mon, row, "right", text2, color, ...) -- PRINT AMOUNT
-          sliderbarupdate(trash[i].displayName, trash[i].minQuantity, item.amount)
+          sliderbarupdate(trash[i].displayName, trash[i].maxQuantity, item.amount)
           row = row + 2
         else
-          text = string.format("%s %s", trash[i].displayName .. ":", item.amount .. "/" .. trash[i].minQuantity) -- Stone 5000/5001
+          text = string.format("%s %s", trash[i].displayName .. ":", item.amount .. "/" .. trash[i].maxQuantity) -- Stone 5000/5001
           mPrintRowJustified(mon, row, "right", text, color)
           row = row + 1
         end
