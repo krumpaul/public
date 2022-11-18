@@ -273,13 +273,16 @@ function craftitems(mon, stocks, ae2, ... )
                 ae2.craftItem({name = item.name, count = stocks[i].batchSize})
             end
         end
-        text = string.format("%s %s", stocks[i].displayName .. ":", item.amount .. "/" .. stocks[i].minQuantity) -- Stone 5000/5001
         if wppnetwork then monitor = wpp.peripheral.wrap(wppmonitor) end
         if useProgressBar == true then
-          mPrintRowJustified(mon, row, "left", text, color, ...)
+          text = string.format("%s", stocks[i].displayName) -- Stone 5000/5001
+          text2 = string.format("%s", item.amount .. "/" .. stocks[i].minQuantity) -- Stone 5000/5001
+          mPrintRowJustified(mon, row, "left", text, color, ...) -- PRINT NAME
+          mPrintRowJustified(mon, row, "right", text2, color, ...) -- PRINT AMOUNT
           sliderbarupdate(stocks[i].displayName, stocks[i].minQuantity, item.amount)
           row = row + 2
         else
+          text = string.format("%s %s", stocks[i].displayName .. ":", item.amount .. "/" .. stocks[i].minQuantity) -- Stone 5000/5001
           mPrintRowJustified(mon, row, "right", text, color)
           row = row + 1
         end
