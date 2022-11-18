@@ -8,7 +8,7 @@ local wppnetwork = "base"
 local wppmonitor = "wpp@base://14/monitor_17"
 local wppmebridge = "wpp@base://15/meBridge_4"
 local trashcan = "cyclic_trash_0"
-local mpptrashcan = "wpp@base://15/cyclic_trash_0"
+local mpptrashcan = "wpp@base://15/cyclic:trash_0"
 local sliderBackgroundDefault = colors.gray
 local sliderForegroundDefault = colors.red
 local sliderBarHeightDefault = 3
@@ -105,11 +105,13 @@ function sliderbarSetup(mon, itemname, x, y, width, height, background, foregrou
   end
   
   function sliderbarupdate(slidername, maxval, curval)
-    local itempercent = 0 
+    local itempercent = 0
     if curval > maxval then
-      itempercent = 100;
+      
+      itempercent = math.floor((maxval / curval) * 100);
+      -- HOW MUCH MORE TO REMOVE
     else
-      itempercent = math.floor((curval / maxval) * 100)
+      itempercent = 100
     end
     sliders.updateSlider(slidername, itempercent)
   end
@@ -166,8 +168,8 @@ function trashitems(mon, trash, trashperi, ... )
         end
         if item.amount > trash[i].maxQuantity then
             color = colors.red
-            print("Would have trashed: " .. item.name .. " batch size: " .. trash[i].batchSize .. " want to get to: " .. trash[i].maxQuantity .. " currently have: " .. item.amount )
-            ae2.exportItemToPeripheral({name = item.name, count = trash[i].batchSize}, trashcan)
+            print("Would have trashed: " .. item.name .. " want to get to: " .. trash[i].maxQuantity .. " currently have: " .. item.amount )
+            ae2.exportItemToPeripheral({name = item.name, count = (item.amount - trash[i].maxQuantity)}, trashcan)
 
             --print("Crafting Required for:", trash[i].displayName)
             --if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
@@ -232,10 +234,12 @@ function main()
     end
     -- Initialize TrashCan
     trashperi = peripheral.find(trashcan)
-    if (not trashperi and wppnetwork)  then 
+    if (not trashperi and wppnetwork)  then
+        print("local trashcan not found. Looking for WPP trashcan")
         trashperimpp = wpp.peripheral.wrap(mpptrashcan)
-    if (not trashperi or not trashperimpp)  then 
-        error("Trashcan not found. trashcan MUST be attached to the network via wired modem. IF using WPP, connect trashcan to same computer")
+    end
+    if (not trashperi and not trashperimpp)  then 
+        error("Trashcan not found. trashcan MUST be attached to the network via wired modem. IF using WPP, connect trashcan to same computer as MEBRIDGE")
     else
         print("Trash initialized.")
     end
