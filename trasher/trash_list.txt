@@ -1,0 +1,9 @@
+{
+	{
+		displayName = "Dirt",
+		itemId = "minecraft:dirt",
+		variant = 0,
+		maxQuantity = 100000,
+		batchSize = 100,
+	},
+}
