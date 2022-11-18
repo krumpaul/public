@@ -253,7 +253,11 @@ function craftitems(mon, stocks, ae2, ... )
         row = row + 1
     end
     for i=1, #stocks do
+      if useProgressBar == true then
+        color = colors.white
+      else
         color = colors.green
+      end
         --print("Checking inventory for", stocks[i].displayName)
         if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
         item = (ae2.getItem({ name = stocks[i].itemId}))
