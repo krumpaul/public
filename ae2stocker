@@ -255,7 +255,7 @@ function craftitems(mon, stocks, ae2, ... )
     end
     for i=1, #stocks do
         color = colors.green
-        print("Checking inventory for", stocks[i].displayName)
+        --print("Checking inventory for", stocks[i].displayName)
         if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
         item = (ae2.getItem({ name = stocks[i].itemId}))
         if (item == nil or item == '') then 
@@ -263,12 +263,12 @@ function craftitems(mon, stocks, ae2, ... )
         end
         if item.amount < stocks[i].minQuantity then
             color = colors.red
-            print("Crafting Required for:", stocks[i].displayName)
+            --print("Crafting Required for:", stocks[i].displayName)
             if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
             craftingstatus = ae2.isItemCrafting(item)
             if craftingstatus then color = colors.orange end
             if ( ae2.isItemCraftable(item) and not craftingstatus and isCpuAvailable(mon, ae2)  ) then
-                print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
+                --print(stocks[i].batchSize, stocks[i].displayName, "sent for crafting")
                 color = colors.orange
                 if wppnetwork then ae2 = wpp.peripheral.wrap(wppmebridge) end
                 ae2.craftItem({name = item.name, count = stocks[i].batchSize})
